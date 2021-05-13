@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>My Website</title>
+    <link>/</link>
+    <description>Recent content on My Website</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Wed, 12 May 2021 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Blog Post 1</title>
+      <link>/post/2021/05/12/blog-post-1/</link>
+      <pubDate>Wed, 12 May 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2021/05/12/blog-post-1/</guid>
+      <description> ##Here is my first post!
+summary(iris) ## Sepal.Length Sepal.Width Petal.Length Petal.Width ## Min. :4.300 Min. :2.000 Min. :1.000 Min. :0.100 ## 1st Qu.:5.100 1st Qu.:2.800 1st Qu.:1.600 1st Qu.:0.300 ## Median :5.800 Median :3.000 Median :4.350 Median :1.300 ## Mean :5.843 Mean :3.057 Mean :3.758 Mean :1.199 ## 3rd Qu.:6.400 3rd Qu.:3.300 3rd Qu.:5.100 3rd Qu.:1.800 ## Max. :7.900 Max. :4.400 Max. :6.900 Max. :2.500 ## Species ## setosa :50 ## versicolor:50 ## virginica :50 ## ## ##  </description>
+    </item>
+    
+    <item>
+      <title>Project 1</title>
+      <link>/project/project1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project1/</guid>
+      <description>Franchesca Maria Lyra Introduction: The dataset was acquired from country health rankings (https://www.countyhealthrankings.org/app/texas/2021/measure/factors/9/map), it is Texas summary data from 2018 that contains percentages of health concerns, economic statuses, and education status of residents in each Texas county. To keep the data tidy and shorter, I deleted columns that were not of concern/interest. The main data set I gathered from was split and then rejoined, as the data set had several tabs in original excel.</description>
+    </item>
+    
+    <item>
+      <title>Project 2- Franchesca Lyra</title>
+      <link>/project/project2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project2/</guid>
+      <description>Franchesca Maria Lyra, fml368  Introduction: This dataset has information gathered on 55 medical school applicants from a liberal arts college in the Midwest. The dataset looks at medical school admission status and information on GPA and standardized test scores. The first variable is labelled “Accept,” it is a binary categorical variable with “A” indicating the applicant was admitted and “D” indicating the applicant was denied admission. The variable “Sex” is also binary, with “F” representing the applicant is female, and “M” representing male.</description>
+    </item>
+    
+    <item>
+      <title>Projects</title>
+      <link>/projects/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/projects/</guid>
+      <description> Check out some of my coding projects below:
+ Wrangling &amp;amp; Exploratory Data Analysis
+ Modeling, Inference, Prediction
+  -- </description>
+    </item>
+    
+    <item>
+      <title>Resume</title>
+      <link>/resume/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/resume/</guid>
+      <description>    </description>
+    </item>
+    
+  </channel>
+</rss>

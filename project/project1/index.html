@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Franchesca Maria Lyra" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../../img/favicon.ico">
+    <title>Project 1</title>
+    <meta name="generator" content="Hugo 0.83.1" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../../post/">BLOG</a></li>
+        
+        <li><a href="../../projects/">PROJECTS</a></li>
+        
+        <li><a href="../../resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../../project/project1/">Project 1</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         January 1, 0001 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="franchesca-maria-lyra" class="section level2">
+<h2>Franchesca Maria Lyra</h2>
+<p>Introduction:
+The dataset was acquired from country health rankings (<a href="https://www.countyhealthrankings.org/app/texas/2021/measure/factors/9/map" class="uri">https://www.countyhealthrankings.org/app/texas/2021/measure/factors/9/map</a>), it is Texas summary data from 2018 that contains percentages of health concerns, economic statuses, and education status of residents in each Texas county. To keep the data tidy and shorter, I deleted columns that were not of concern/interest. The main data set I gathered from was split and then rejoined, as the data set had several tabs in original excel. The variables in the joined data set are county, percent of residents with diabetes, percent of low birthweight births, percent of obesity among residents, percent smokers, percent completed high school, percent of residents with food insecurity, and population. This combination of variables is of interest to me since socioecomic status tends to be associated with access to both health care and education. I suspect that counties with food insecurity and low high school completion will have worse health outcomes (smoking, obesity, diabetes).</p>
+</div>
+<div id="joining-datasets" class="section level1">
+<h1>Joining Datasets</h1>
+<pre class="r"><code>library(tidyverse)
+getwd()</code></pre>
+<pre><code>## [1] &quot;/stor/home/fml368/website1/content/project&quot;</code></pre>
+<pre class="r"><code>library(readxl)
+
+TXDATA1 &lt;- read_xlsx(&quot;TXDATA1.xlsx&quot;)
+TXDATA2 &lt;- read_xlsx(&quot;TXDATA2.xlsx&quot;)
+
+
+texasfulljoin &lt;- full_join(TXDATA1, TXDATA2, by = &quot;County&quot;)</code></pre>
+<div id="wrangling-part-1" class="section level2">
+<h2>Wrangling Part 1</h2>
+<p>A full join function was performed on TXDATA1 and TXDATA2, this combined them into texasfulljoin. I chose a full join because it retains all the original data and does not drop any rows. All the data in both TXDATA1 and TXDATA2 were of use for this project, making full join the best join option over the rest. I began by filtering so that the set only includes diabetes rates that are less than 20 percent, as there were very few data points above that I suspect are outliers. I then arranged the dataset by percent food insecure. I proceeded by selecting to put the PercentObesity and PercentDiabetes columns together and before other columns since I suspect that the variables are associated. I then used the groupby function to group PercentFoodInsecure by the categorical variable OverOrUnderOneMillionPopulation. I then mutated to create a new column that LowBirthWeight percentile.</p>
+<pre class="r"><code>texasfulljoin &lt;- texasfulljoin %&gt;% filter(PercentDiabetes &lt; 20)
+
+texasfulljoin &lt;- texasfulljoin %&gt;% arrange(PercentFoodInsecure)
+
+texasfulljoin &lt;- texasfulljoin %&gt;% select(PercentObesity, PercentDiabetes, 
+    everything())
+
+texasfulljoin %&gt;% group_by(OverOrUnderOneMillionPopulation) %&gt;% 
+    summarize(mean_PercentFoodInsecure = mean(PercentFoodInsecure, 
+        na.rm = T), sd_PercentFoodInsecure = sd(PercentFoodInsecure, 
+        na.rm = T))</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##   OverOrUnderOneMillionPopulation mean_PercentFoodInsecure sd_PercentFoodInsecu…
+##   &lt;chr&gt;                                              &lt;dbl&gt;                 &lt;dbl&gt;
+## 1 over                                                13.9                 0.785
+## 2 under                                               15.2                 2.63</code></pre>
+<pre class="r"><code>summarize(texasfulljoin)</code></pre>
+<pre><code>## # A tibble: 1 x 0</code></pre>
+<pre class="r"><code>texasfulljoin %&gt;% mutate_if(is.character, as.factor)</code></pre>
+<pre><code>## # A tibble: 246 x 8
+##    PercentObesity PercentDiabetes County PercentLowBirth… PercentSmokers
+##             &lt;dbl&gt;           &lt;dbl&gt; &lt;fct&gt;             &lt;dbl&gt;          &lt;dbl&gt;
+##  1           20.3             6.6 Crane              8.03           15.9
+##  2           29.6            11.9 Yoakum             6.44           16.5
+##  3           26.3             7.7 Glass…            NA              18.2
+##  4           21.5             9.9 Sterl…            NA              17.9
+##  5           31.4             7.4 Andre…             7.03           17.3
+##  6           29.1            13.4 Reeves             8.35           17.5
+##  7           19.6             5.7 Concho             8.14           19.4
+##  8           31               6.2 Martin             7.95           17.7
+##  9           30.9            14.1 Rockw…             7.73           13.8
+## 10           34.5             5.9 Midla…             8.17           15.0
+## # … with 236 more rows, and 3 more variables: PercentCompletedHighSchool &lt;dbl&gt;,
+## #   PercentFoodInsecure &lt;dbl&gt;, OverOrUnderOneMillionPopulation &lt;fct&gt;</code></pre>
+<pre class="r"><code>texasfulljoin &lt;- texasfulljoin %&gt;% mutate(lowbirth_pctile = ntile(PercentLowBirthWeight, 
+    100))</code></pre>
+<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
+</div>
+<div id="wrangling-part-2" class="section level2">
+<h2>Wrangling Part 2</h2>
+<p>The mean, standard deviation, variance, quantile, minimum, maximum, and n_dstinct were calculated for all numeric variables. Each numeric variable was grouped by the categorical variable OverOrUnderOneMillion, which states wether or not the texas county has a population of over one million people living in the given county.</p>
+<p>I will report the most interesting/significant results. Counties with populations over one million has a higher percentage of high school completion, with over one million counties having a mean of 85 percent completion and under one million counties having a mean of 80 percent high school completion. Besides the PercentLowBirthWeight variable, there was a higher standard deviation for all variables in the under one million category versus the over one million category.</p>
+<pre class="r"><code>mean(texasfulljoin$PercentCompletedHighSchool)</code></pre>
+<pre><code>## [1] 80.83189</code></pre>
+<pre class="r"><code>mean(texasfulljoin$PercentLowBirthWeight)</code></pre>
+<pre><code>## [1] NA</code></pre>
+<pre class="r"><code>mean(texasfulljoin$PercentSmokers)</code></pre>
+<pre><code>## [1] 18.90694</code></pre>
+<pre class="r"><code>mean(texasfulljoin$PercentObesity)</code></pre>
+<pre><code>## [1] 30.81748</code></pre>
+<pre class="r"><code>mean(texasfulljoin$PercentDiabetes)</code></pre>
+<pre><code>## [1] 11.31098</code></pre>
+<pre class="r"><code>mean(texasfulljoin$PercentFoodInsecure)</code></pre>
+<pre><code>## [1] 15.21057</code></pre>
+<pre class="r"><code>sd(texasfulljoin$PercentCompletedHighSchool)</code></pre>
+<pre><code>## [1] 8.550493</code></pre>
+<pre class="r"><code>sd(texasfulljoin$PercentLowBirthWeight)</code></pre>
+<pre><code>## [1] NA</code></pre>
+<pre class="r"><code>sd(texasfulljoin$PercentSmokers)</code></pre>
+<pre><code>## [1] 2.297557</code></pre>
+<pre class="r"><code>sd(texasfulljoin$PercentObesity)</code></pre>
+<pre><code>## [1] 6.218732</code></pre>
+<pre class="r"><code>sd(texasfulljoin$PercentDiabetes)</code></pre>
+<pre><code>## [1] 3.43598</code></pre>
+<pre class="r"><code>sd(texasfulljoin$PercentFoodInsecure)</code></pre>
+<pre><code>## [1] 2.611882</code></pre>
+<pre class="r"><code>var(texasfulljoin$PercentCompletedHighSchool)</code></pre>
+<pre><code>## [1] 73.11093</code></pre>
+<pre class="r"><code>var(texasfulljoin$PercentLowBirthWeight)</code></pre>
+<pre><code>## [1] NA</code></pre>
+<pre class="r"><code>var(texasfulljoin$PercentSmokers)</code></pre>
+<pre><code>## [1] 5.278769</code></pre>
+<pre class="r"><code>var(texasfulljoin$PercentObesity)</code></pre>
+<pre><code>## [1] 38.67263</code></pre>
+<pre class="r"><code>var(texasfulljoin$PercentDiabetes)</code></pre>
+<pre><code>## [1] 11.80596</code></pre>
+<pre class="r"><code>var(texasfulljoin$PercentFoodInsecure)</code></pre>
+<pre><code>## [1] 6.821929</code></pre>
+<pre class="r"><code>quantile(texasfulljoin$PercentCompletedHighSchool)</code></pre>
+<pre><code>##       0%      25%      50%      75%     100% 
+## 26.43979 76.91453 82.53584 86.18890 94.73684</code></pre>
+<pre class="r"><code>quantile(texasfulljoin$PercentSmokers)</code></pre>
+<pre><code>##       0%      25%      50%      75%     100% 
+## 11.54372 17.53677 19.14091 20.43160 23.82233</code></pre>
+<pre class="r"><code>quantile(texasfulljoin$PercentObesity)</code></pre>
+<pre><code>##     0%    25%    50%    75%   100% 
+## 17.800 26.100 30.550 34.875 46.600</code></pre>
+<pre class="r"><code>quantile(texasfulljoin$PercentDiabetes)</code></pre>
+<pre><code>##     0%    25%    50%    75%   100% 
+##  5.100  8.500 11.100 13.875 19.500</code></pre>
+<pre class="r"><code>quantile(texasfulljoin$PercentFoodInsecure)</code></pre>
+<pre><code>##   0%  25%  50%  75% 100% 
+##  8.6 13.3 15.2 16.8 22.5</code></pre>
+<pre class="r"><code>min(texasfulljoin$PercentCompletedHighSchool)</code></pre>
+<pre><code>## [1] 26.43979</code></pre>
+<pre class="r"><code>min(texasfulljoin$PercentLowBirthWeight)</code></pre>
+<pre><code>## [1] NA</code></pre>
+<pre class="r"><code>min(texasfulljoin$PercentSmokers)</code></pre>
+<pre><code>## [1] 11.54372</code></pre>
+<pre class="r"><code>min(texasfulljoin$PercentObesity)</code></pre>
+<pre><code>## [1] 17.8</code></pre>
+<pre class="r"><code>min(texasfulljoin$PercentDiabetes)</code></pre>
+<pre><code>## [1] 5.1</code></pre>
+<pre class="r"><code>min(texasfulljoin$PercentFoodInsecure)</code></pre>
+<pre><code>## [1] 8.6</code></pre>
+<pre class="r"><code>max(texasfulljoin$PercentCompletedHighSchool)</code></pre>
+<pre><code>## [1] 94.73684</code></pre>
+<pre class="r"><code>max(texasfulljoin$PercentLowBirthWeight)</code></pre>
+<pre><code>## [1] NA</code></pre>
+<pre class="r"><code>max(texasfulljoin$PercentSmokers)</code></pre>
+<pre><code>## [1] 23.82233</code></pre>
+<pre class="r"><code>max(texasfulljoin$PercentObesity)</code></pre>
+<pre><code>## [1] 46.6</code></pre>
+<pre class="r"><code>max(texasfulljoin$PercentDiabetes)</code></pre>
+<pre><code>## [1] 19.5</code></pre>
+<pre class="r"><code>max(texasfulljoin$PercentFoodInsecure)</code></pre>
+<pre><code>## [1] 22.5</code></pre>
+<pre class="r"><code>n_distinct(texasfulljoin$PercentCompletedHighSchool)</code></pre>
+<pre><code>## [1] 246</code></pre>
+<pre class="r"><code>n_distinct(texasfulljoin$PercentLowBirthWeight)</code></pre>
+<pre><code>## [1] 228</code></pre>
+<pre class="r"><code>n_distinct(texasfulljoin$PercentSmokers)</code></pre>
+<pre><code>## [1] 246</code></pre>
+<pre class="r"><code>n_distinct(texasfulljoin$PercentObesity)</code></pre>
+<pre><code>## [1] 149</code></pre>
+<pre class="r"><code>n_distinct(texasfulljoin$PercentDiabetes)</code></pre>
+<pre><code>## [1] 108</code></pre>
+<pre class="r"><code>n_distinct(texasfulljoin$PercentFoodInsecure)</code></pre>
+<pre><code>## [1] 97</code></pre>
+<pre class="r"><code>texasfulljoin %&gt;% group_by(OverOrUnderOneMillionPopulation) %&gt;% 
+    summarize(mean_PercentObesity = mean(PercentObesity, na.rm = T), 
+        sd_PercentObesity = sd(PercentObesity, na.rm = T))</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##   OverOrUnderOneMillionPopulation mean_PercentObesity sd_PercentObesity
+##   &lt;chr&gt;                                         &lt;dbl&gt;             &lt;dbl&gt;
+## 1 over                                           28.4              3.66
+## 2 under                                          30.9              6.25</code></pre>
+<pre class="r"><code>texasfulljoin %&gt;% group_by(OverOrUnderOneMillionPopulation) %&gt;% 
+    summarize(mean_PercentSmokers = mean(PercentSmokers, na.rm = T), 
+        sd_PercentSmokers = sd(PercentSmokers, na.rm = T))</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##   OverOrUnderOneMillionPopulation mean_PercentSmokers sd_PercentSmokers
+##   &lt;chr&gt;                                         &lt;dbl&gt;             &lt;dbl&gt;
+## 1 over                                           14.5              1.30
+## 2 under                                          19.0              2.24</code></pre>
+<pre class="r"><code>texasfulljoin %&gt;% group_by(OverOrUnderOneMillionPopulation) %&gt;% 
+    summarize(mean_PercentDiabetes = mean(PercentDiabetes, na.rm = T), 
+        sd_PercentDiabetes = sd(PercentDiabetes, na.rm = T))</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##   OverOrUnderOneMillionPopulation mean_PercentDiabetes sd_PercentDiabetes
+##   &lt;chr&gt;                                          &lt;dbl&gt;              &lt;dbl&gt;
+## 1 over                                            9.38               1.69
+## 2 under                                          11.3                3.45</code></pre>
+<pre class="r"><code>texasfulljoin %&gt;% group_by(OverOrUnderOneMillionPopulation) %&gt;% 
+    summarize(mean_PercentFoodInsecure = mean(PercentFoodInsecure, 
+        na.rm = T), sd_PercentFoodInsecure = sd(PercentFoodInsecure, 
+        na.rm = T))</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##   OverOrUnderOneMillionPopulation mean_PercentFoodInsecure sd_PercentFoodInsecu…
+##   &lt;chr&gt;                                              &lt;dbl&gt;                 &lt;dbl&gt;
+## 1 over                                                13.9                 0.785
+## 2 under                                               15.2                 2.63</code></pre>
+<pre class="r"><code>texasfulljoin %&gt;% group_by(OverOrUnderOneMillionPopulation) %&gt;% 
+    summarize(mean_PercentLowBirthWeight = mean(PercentLowBirthWeight, 
+        na.rm = T), sd_PercentLowBirthWeight = sd(PercentLowBirthWeight, 
+        na.rm = T))</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##   OverOrUnderOneMillionPopulat… mean_PercentLowBirthWeig… sd_PercentLowBirthWei…
+##   &lt;chr&gt;                                             &lt;dbl&gt;                  &lt;dbl&gt;
+## 1 over                                               8.42                  0.590
+## 2 under                                              8.05                  1.35</code></pre>
+<pre class="r"><code>texasfulljoin %&gt;% group_by(OverOrUnderOneMillionPopulation) %&gt;% 
+    summarize(mean_PercentCompletedHighSchool = mean(PercentCompletedHighSchool, 
+        na.rm = T), sd_PercentCompletedHighSchool = sd(PercentCompletedHighSchool, 
+        na.rm = T))</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##   OverOrUnderOneMillionPopu… mean_PercentCompletedHigh… sd_PercentCompletedHigh…
+##   &lt;chr&gt;                                           &lt;dbl&gt;                    &lt;dbl&gt;
+## 1 over                                             85.3                     3.33
+## 2 under                                            80.8                     8.59</code></pre>
+<pre class="r"><code>texasfulljoin %&gt;% summarize_if(is.numeric, list(min = min, max = max), 
+    na.rm = T)</code></pre>
+<pre><code>## # A tibble: 1 x 14
+##   PercentObesity_… PercentDiabetes… PercentLowBirth… PercentSmokers_…
+##              &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;
+## 1             17.8              5.1             4.51             11.5
+## # … with 10 more variables: PercentCompletedHighSchool_min &lt;dbl&gt;,
+## #   PercentFoodInsecure_min &lt;dbl&gt;, lowbirth_pctile_min &lt;int&gt;,
+## #   PercentObesity_max &lt;dbl&gt;, PercentDiabetes_max &lt;dbl&gt;,
+## #   PercentLowBirthWeight_max &lt;dbl&gt;, PercentSmokers_max &lt;dbl&gt;,
+## #   PercentCompletedHighSchool_max &lt;dbl&gt;, PercentFoodInsecure_max &lt;dbl&gt;,
+## #   lowbirth_pctile_max &lt;int&gt;</code></pre>
+</div>
+<div id="visualizing-dimensionality-reduction-and-pivotretidy" class="section level2">
+<h2>Visualizing, Dimensionality Reduction, and Pivot/Retidy</h2>
+<p>Graph 1 shows percent obesity and percent smokers per Texas county. Graph 2 shows a heatmap of numeric variables, in which the highest correlation seems to be between percent smokers and percent food insecure (0.65), suggesting that the two are possibly associated. Graph 3 shows the occurance of obesity and diabetes per Texas county, the county with the highest diabetes percentage (about 11.9), has an obesity percentage of about 33 percent.</p>
+<pre class="r"><code>library(tidyverse)
+
+texasfulljoin2 &lt;- as.data.frame(apply(texasfulljoin, 2, as.numeric))
+
+txmat &lt;- texasfulljoin2 %&gt;% select_if(is.numeric, na.rm=T) %&gt;% cor(use=&quot;pair&quot;)
+
+
+ggplot(texasfulljoin, aes(x = County))+
+geom_bar(aes(y=PercentSmokers, color= PercentObesity), stat=&quot;summary&quot;, fun=mean) + scale_y_continuous(lim=c(0,25)) + xlab(&quot;Texas County&quot;) + ylab(&quot;Percent Smokers&quot;) + ggtitle(&quot;Percent of Smokers and Obesity per Texas County&quot;) </code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>tidytexas &lt;- txmat %&gt;% as.data.frame %&gt;% rownames_to_column(&quot;var1&quot;) %&gt;%
+pivot_longer(-1,names_to=&quot;var2&quot;,values_to=&quot;correlation&quot;) 
+
+
+tidytexas%&gt;%ggplot(aes(var1,var2,fill=correlation))+
+geom_tile()+ ggtitle(&quot;Heat Map of Numeric Variables&quot;) +
+scale_fill_gradient2(low=&quot;red&quot;,mid=&quot;white&quot;,high=&quot;blue&quot;)+ #makes colors!
+geom_text(aes(label=round(correlation,2)),color = &quot;black&quot;, size = 4)+ #overlay values
+theme(axis.text.x = element_text(angle = 90, hjust=1))+ #flips x-axis labels
+coord_fixed() </code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-4-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(texasfulljoin, aes(x=PercentObesity, fill=PercentDiabetes)) + geom_histogram(bins=60) + ggtitle(&quot;Percent Obesity and Diabetes Occurance per Texas County&quot;) + xlab(&quot;Obesity&quot;) + ylab(&quot;Diabetes&quot;) </code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-4-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#PAM CLUSTERING 
+
+library(cluster)
+
+texasfulljoin2%&gt;%ungroup()%&gt;%mutate(gmeanFI=mean(PercentFoodInsecure),gmeanHS=mean(PercentCompletedHighSchool))%&gt;%
+group_by(gmeanFI,gmeanHS,PercentSmokers)%&gt;%
+summarize(meanFI=mean(PercentFoodInsecure), meanHS=mean(PercentCompletedHighSchool),
+WSS=sum((PercentFoodInsecure-meanFI)^2+(PercentCompletedHighSchool-meanHS)^2),
+BSS=sum((meanFI-gmeanFI)^2+(meanHS-gmeanHS)^2))%&gt;%ungroup()%&gt;%
+summarize(BSS=sum(BSS),WSS=sum(WSS))</code></pre>
+<pre><code>## # A tibble: 1 x 2
+##      BSS   WSS
+##    &lt;dbl&gt; &lt;dbl&gt;
+## 1 19584.     0</code></pre>
+<pre class="r"><code>kmeans1 &lt;- kmeans(texasfulljoin2[!is.na(texasfulljoin2)], 3)
+kmeans1</code></pre>
+<pre><code>## K-means clustering with 3 clusters of sizes 1075, 283, 328
+## 
+## Cluster means:
+##       [,1]
+## 1 13.68819
+## 2 34.55895
+## 3 80.76208
+## 
+## Clustering vector:
+##   [1] 1 2 2 1 2 2 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 1 2 2 1 2 1 2 2 2 2 2 2
+##  [38] 2 2 2 2 2 2 2 1 2 2 1 2 2 2 1 2 1 1 2 2 2 1 2 2 1 1 1 2 1 2 2 2 2 2 2 1 2
+##  [75] 2 2 2 2 2 2 1 2 2 1 2 2 2 1 2 2 2 1 2 2 2 2 2 2 2 2
+##  [ reached getOption(&quot;max.print&quot;) -- omitted 1586 entries ]
+## 
+## Within cluster sum of squares by cluster:
+## [1] 28161.12 16855.20 26334.75
+##  (between_SS / total_SS =  94.1 %)
+## 
+## Available components:
+## 
+## [1] &quot;cluster&quot;      &quot;centers&quot;      &quot;totss&quot;        &quot;withinss&quot;     &quot;tot.withinss&quot;
+## [6] &quot;betweenss&quot;    &quot;size&quot;         &quot;iter&quot;         &quot;ifault&quot;</code></pre>
+<pre class="r"><code>kmeans1$size</code></pre>
+<pre><code>## [1] 1075  283  328</code></pre>
+<pre class="r"><code>kmeans1$centers</code></pre>
+<pre><code>##       [,1]
+## 1 13.68819
+## 2 34.55895
+## 3 80.76208</code></pre>
+<pre class="r"><code>kmeans1$cluster</code></pre>
+<pre><code>##   [1] 1 2 2 1 2 2 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 1 2 2 1 2 1 2 2 2 2 2 2
+##  [38] 2 2 2 2 2 2 2 1 2 2 1 2 2 2 1 2 1 1 2 2 2 1 2 2 1 1 1 2 1 2 2 2 2 2 2 1 2
+##  [75] 2 2 2 2 2 2 1 2 2 1 2 2 2 1 2 2 2 1 2 2 2 2 2 2 2 2
+##  [ reached getOption(&quot;max.print&quot;) -- omitted 1586 entries ]</code></pre>
+<pre class="r"><code>kmeans1$betweenss</code></pre>
+<pre><code>## [1] 1137002</code></pre>
+<pre class="r"><code>kmeans1$tot.withinss</code></pre>
+<pre><code>## [1] 71351.07</code></pre>
+<pre class="r"><code>library(cluster)
+sil_width&lt;-vector() #empty vector to hold mean sil width
+for(i in 2:10){
+kms &lt;- kmeans(texasfulljoin2[!is.na(texasfulljoin2)],centers=i) #compute k-means solution
+sil &lt;- silhouette(kms$cluster,dist(texasfulljoin2[!is.na(texasfulljoin2)])) #get sil widths
+sil_width[i]&lt;-mean(sil[,3]) #take averages (higher is better)
+}
+
+
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name=&quot;k&quot;,breaks=1:10)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-4-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>library(cluster)
+
+pam1 &lt;- texasfulljoin2 %&gt;% pam(k=3)
+pam1</code></pre>
+<pre><code>## Medoids:
+##       ID PercentObesity PercentDiabetes County PercentLowBirthWeight
+## [1,]   3           26.3             7.7     NA                    NA
+## [2,]  85           26.3            11.5     NA                    NA
+## [3,] 145           29.1            10.6     NA                    NA
+##      PercentSmokers PercentCompletedHighSchool PercentFoodInsecure
+## [1,]       18.18252                   69.44758                 9.9
+## [2,]       19.46779                   86.06870                14.3
+## [3,]       17.09487                   77.93534                15.7
+##      OverOrUnderOneMillionPopulation lowbirth_pctile
+## [1,]                              NA              NA
+## [2,]                              NA              NA
+## [3,]                              NA              NA
+## Clustering vector:
+##   [1] 1 1 1 2 1 1 1 3 2 3 3 2 3 2 2 2 2 2 2 2 3 3 3 3 3 3 2 3 1 1 2 2 2 3 2 2 3
+##  [38] 2 1 2 3 3 1 3 1 2 3 2 3 2 1 2 2 2 2 3 2 3 2 2 2 2 1 2 3 2 2 2 3 2 2 1 2 3
+##  [75] 2 2 2 3 2 2 2 3 3 2 2 1 3 1 2 3 3 1 3 2 3 3 3 3 2 2
+##  [ reached getOption(&quot;max.print&quot;) -- omitted 146 entries ]
+## Objective function:
+##    build     swap 
+## 11.99888 11.99888 
+## 
+## Available components:
+##  [1] &quot;medoids&quot;    &quot;id.med&quot;     &quot;clustering&quot; &quot;objective&quot;  &quot;isolation&quot; 
+##  [6] &quot;clusinfo&quot;   &quot;silinfo&quot;    &quot;diss&quot;       &quot;call&quot;       &quot;data&quot;</code></pre>
+<pre class="r"><code>pamclust&lt;-texasfulljoin2 %&gt;% mutate(cluster=as.factor(pam1$clustering))
+pamclust %&gt;% ggplot(aes(PercentFoodInsecure,PercentCompletedHighSchool,color=cluster)) + geom_point() + ggtitle(&quot;Clusters for Percent Completed High School and Percent Food Insecure&quot;)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-4-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pamclust %&gt;% group_by(cluster) %&gt;% summarize_if(is.numeric,mean,na.rm=T)</code></pre>
+<pre><code>## # A tibble: 3 x 10
+##   cluster PercentObesity PercentDiabetes County PercentLowBirth… PercentSmokers
+##   &lt;fct&gt;            &lt;dbl&gt;           &lt;dbl&gt;  &lt;dbl&gt;            &lt;dbl&gt;          &lt;dbl&gt;
+## 1 1                 28.0            9.38    NaN             8.09           19.2
+## 2 2                 29.2           11.2     NaN             7.90           18.4
+## 3 3                 33.3           12.0     NaN             8.21           19.3
+## # … with 4 more variables: PercentCompletedHighSchool &lt;dbl&gt;,
+## #   PercentFoodInsecure &lt;dbl&gt;, OverOrUnderOneMillionPopulation &lt;dbl&gt;,
+## #   lowbirth_pctile &lt;dbl&gt;</code></pre>
+<pre class="r"><code># Pivot and Retidy
+
+texasfulljoin &lt;- texasfulljoin %&gt;% pivot_longer(cols=c(&quot;PercentObesity&quot;,&quot;PercentFoodInsecure&quot;), names_to=&quot;PO&quot;, values_to=&quot;FI&quot;)
+
+texasfulljoin &lt;- texasfulljoin%&gt;%
+  pivot_wider(names_from=&quot;PO&quot;,values_from=&quot;FI&quot;)</code></pre>
+</div>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../../js/docs.min.js"></script>
+<script src="../../js/main.js"></script>
+
+<script src="../../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

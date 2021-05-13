@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Projects on My Website</title>
+    <link>/project/</link>
+    <description>Recent content in Projects on My Website</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language><atom:link href="/project/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Project 1</title>
+      <link>/project/project1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project1/</guid>
+      <description>Franchesca Maria Lyra Introduction: The dataset was acquired from country health rankings (https://www.countyhealthrankings.org/app/texas/2021/measure/factors/9/map), it is Texas summary data from 2018 that contains percentages of health concerns, economic statuses, and education status of residents in each Texas county. To keep the data tidy and shorter, I deleted columns that were not of concern/interest. The main data set I gathered from was split and then rejoined, as the data set had several tabs in original excel.</description>
+    </item>
+    
+    <item>
+      <title>Project 2- Franchesca Lyra</title>
+      <link>/project/project2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project2/</guid>
+      <description>Franchesca Maria Lyra, fml368  Introduction: This dataset has information gathered on 55 medical school applicants from a liberal arts college in the Midwest. The dataset looks at medical school admission status and information on GPA and standardized test scores. The first variable is labelled “Accept,” it is a binary categorical variable with “A” indicating the applicant was admitted and “D” indicating the applicant was denied admission. The variable “Sex” is also binary, with “F” representing the applicant is female, and “M” representing male.</description>
+    </item>
+    
+  </channel>
+</rss>

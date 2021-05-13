@@ -1,0 +1,186 @@
+---
+title: "Project 2- Franchesca Lyra"
+author: "Franchesca Lyra"
+date: "5/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+```
+
+## Franchesca Maria Lyra, fml368
+
+# Introduction:
+This dataset has information gathered on 55 medical school applicants from a liberal arts college in the Midwest. The dataset looks at medical school admission status and information on GPA and standardized test scores. The first variable is labelled "Accept," it is a binary categorical variable with "A" indicating the applicant was admitted and "D" indicating the applicant was denied admission. The variable "Sex" is also binary, with "F" representing the applicant is female, and "M" representing male. The variable "BCMP" is a numeric variable that provides the applicants Bio/Chem/Physics/Math grade point average. GPA is another numeric variable that provides overall GPA of the applicant. "VR" (verbal reasoning), "PS" (physical science), "WS" (writing sample), and "BS" (biological sciences) are 4 seperate variables that represent the subscores/sections of the MCAT. They are all numeric and the four subscores add up to make the total MCAT score. The variable "MCAT" is the MCAT (Medical College Admissions Test) score of the applicant. "Apps" represents the number of medical schools the applicant applied to. There are 55 observations in this dataset. I predict that those with higher MCAT scores are more likely to be admitted to medical schools. 
+
+# Manova Test 
+
+```{R}
+
+medgpa <- read_csv("MedGPA.csv")
+
+manova1 <- manova(cbind( BCPM, GPA, VR, PS, WS, BS, MCAT)~Accept, data=medgpa)
+summary(manova1, tol=0)
+# MANOVA is significant (0.0004985***) -> run univariate ANOVA
+summary(aov(manova1))
+
+# BCPM, GPA, PS, BS, AND MCAT are significant. 
+
+pairwise.t.test(medgpa$BCPM, medgpa$Accept, p.adj="none")
+pairwise.t.test(medgpa$GPA, medgpa$Accept, p.adj="none")
+pairwise.t.test(medgpa$VR, medgpa$Accept, p.adj="none")
+pairwise.t.test(medgpa$PS, medgpa$Accept, p.adj="none")
+pairwise.t.test(medgpa$WS, medgpa$Accept, p.adj="none")
+pairwise.t.test(medgpa$BS, medgpa$Accept, p.adj="none")
+pairwise.t.test(medgpa$MCAT, medgpa$Accept, p.adj="none")
+
+
+# Type 1 Error Probability 
+1-(.95^22)
+
+# Bonferroni
+0.05/22 
+
+
+```
+One MANOVA test, 7 ANOVA tests, and 14 t-tests were run. This means 22 total tests were performed, making alpha equal to .05/22= 0.00227. The probability of a type one error is 0.67. Two variables were not significant, VR (0.13) and WS (0.56), meaning there is no mean difference in group for these variables. The remaining variables were significant, even with the adjusted alpha. Since not much background is provided on this data set, some of they assumptions are unclear as to if they are met. For example the assumption of random sampling: this data may have been gathered via survey which makes it not random. Since each group in the dataset has n= 25+, I think the multivariate normality assumption was met. I am not certain if the remainder of assumptions are met here.
+
+
+# Randomization Test
+
+```{R}
+
+medgpa%>%group_by(Sex)%>%
+summarize(means=mean(MCAT))%>%summarize(`mean_diff:`=diff(means))
+
+rand_dist<-vector()
+for(i in 1:5000){
+new<-data.frame(MCAT=sample(medgpa$MCAT),Sex=medgpa$Sex)
+rand_dist[i]<-mean(new[new$Sex=="M",]$MCAT)-
+mean(new[new$Sex=="F",]$MCAT)
+}
+
+{hist(rand_dist,main="",ylab=""); abline(v = c(-0.026	, 0.026),col="red")}
+
+mean(rand_dist> 0.02645503 | rand_dist < -0.02645503)
+
+
+```
+Here, I looked at mean differences. My null hypothesis was that  sex (male/female) had no association with significant mean difference in MCAT scores, my alternative was that sex had association with different MCAT score outcomes. Since my p-value here is 0.97 I am not able to reject the null hypothesis. 
+
+
+# Linear Regression Model
+```{R}
+
+center_scale <- function(x) {
+    scale(x, scale = FALSE)
+}
+
+medgpa$PScenter <- center_scale(medgpa$PS)
+medgpa$WScenter <- center_scale(medgpa$WS)
+medgpa$BScenter <- center_scale(medgpa$BS)
+
+fit1<-lm(GPA~Accept+PScenter+WScenter+BScenter, data=medgpa)
+summary(fit1)
+
+medgpa%>%ggplot(aes(PScenter+WScenter,GPA))+geom_point()+geom_smooth(method = 'lm',se=F)
+
+library(sandwich); library(lmtest)
+
+medgparesidual<-lm(GPA~Accept+PScenter+WScenter+BScenter, data=medgpa)$residuals
+ggplot()+geom_histogram(aes(medgparesidual),bins=10)
+
+medgpafitted<-lm(GPA~Accept+PScenter+WScenter+BScenter, data=medgpa)$fitted.values
+ggplot()+geom_point(aes(medgpafitted,medgparesidual))+geom_hline(yintercept=0, color='red')
+
+
+```
+For the first linear regression, PS scores explain about 1.3 percent of variation in GPA, WS scores explain 1.5 percent of variation in GPA, and BS scores explain about 4.1 percent of variation in GPA. Here, I am looking at GPA as a response since there subsection scores of the MCAT show proficiency, and thus could be indicators/predictors of the test taker's personal GPA. According to the histogram, it does not appear that normality was met. Looking at the residual vs. fitted, it looks as though linearity and homoskedsaticity assumptions have been met. 
+
+# Logistic Regression
+```{R}
+
+class_diag<-function(probs,truth){
+  
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  prediction<-ifelse(probs>.5,1,0)
+  acc=mean(truth==prediction)
+  sens=mean(prediction[truth==1]==1)
+  spec=mean(prediction[truth==0]==0)
+  ppv=mean(truth[prediction==1]==1)
+  f1=2*(sens*ppv)/(sens+ppv)
+  
+ 
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+
+head(medgpa)
+
+
+fit2 <- glm(Acceptance~GPA+MCAT, data=medgpa, family="binomial")
+
+summary(fit2)
+
+exp(coef(fit2)) %>% round(3)
+
+probs <- predict(fit2, type="response")
+
+class_diag(probs,medgpa$Acceptance)
+
+table(predict=as.numeric(probs>.5),truth=medgpa$Acceptance)%>%addmargins
+
+medgpa$logit<-predict(fit2,type="link")
+
+medgpa%>%ggplot()+geom_density(aes(logit,color=Acceptance,fill=Acceptance), alpha=.4)+
+  theme(legend.position=c(.85,.85))+geom_vline(xintercept=0)+xlab("logit (log-odds)")+
+  geom_rug(aes(logit,color=Acceptance))
+
+library(plotROC)
+
+ROCplot<-ggplot(medgpa)+geom_roc(aes(d=Acceptance,m=probs), n.cuts=0) 
+
+ROCplot
+
+calc_auc(ROCplot)
+
+
+```
+
+The coefficient of 0.004389 suggests that GPA interacts with the binary category of acceptance (1= accept, 0= denied). The AUC is 0.83, suggesting the model moderately fits and predicts the given data. Accuracy is 0.74, sensitivity is 0.76, specificity is 0.72, and precision is 0.77 (these are worse than AUC value and weaken the fit).
+
+
+```{R}
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

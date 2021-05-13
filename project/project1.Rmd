@@ -1,0 +1,229 @@
+---
+title: "Project 1"
+author: "Franchesca Lyra"
+date: "4/2/2021"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", warning = F, message = F,
+tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
+```
+
+## Franchesca Maria Lyra
+
+Introduction:
+The dataset was acquired from country health rankings (https://www.countyhealthrankings.org/app/texas/2021/measure/factors/9/map), it is Texas summary data from 2018 that contains percentages of health concerns, economic statuses, and education status of residents in each Texas county. To keep the data tidy and shorter, I deleted columns that were not of concern/interest. The main data set I gathered from was split and then rejoined, as the data set had several tabs in original excel. The variables in the joined data set are county, percent of residents with diabetes, percent of low birthweight births, percent of obesity among residents, percent smokers, percent completed high school, percent of residents with food insecurity, and population. This combination of variables is of interest to me since socioecomic status tends to be associated with access to both health care and education. I suspect that counties with food insecurity and low high school completion will have worse health outcomes (smoking, obesity, diabetes).   
+
+# Joining Datasets 
+
+
+
+```{R} 
+library(tidyverse)
+getwd()
+
+library(readxl)
+
+TXDATA1 <- read_xlsx("TXDATA1.xlsx")
+TXDATA2 <- read_xlsx("TXDATA2.xlsx")
+
+
+texasfulljoin <- full_join(TXDATA1,TXDATA2, by="County")
+```
+
+## Wrangling Part 1
+
+A full join function was performed on TXDATA1 and TXDATA2, this combined them into texasfulljoin. I chose a full join because it retains all the original data and does not drop any rows. All the data in both TXDATA1 and TXDATA2 were of use for this project, making full join the best join option over the rest. I began by filtering so that the set only includes diabetes rates that are less than 20 percent, as there were very few data points above that I suspect are outliers. I then arranged the dataset by percent food insecure. I proceeded by selecting to put the PercentObesity and PercentDiabetes columns together and before other columns since I suspect that the variables are associated. I then used the groupby function to group PercentFoodInsecure by the categorical variable OverOrUnderOneMillionPopulation. I then mutated to create a new column that LowBirthWeight percentile. 
+
+```{R}
+texasfulljoin <- texasfulljoin %>% filter(PercentDiabetes<20)
+
+texasfulljoin <- texasfulljoin %>% arrange(PercentFoodInsecure)
+
+texasfulljoin <- texasfulljoin %>% select(PercentObesity, PercentDiabetes, everything()) 
+
+texasfulljoin %>% group_by(OverOrUnderOneMillionPopulation) %>% 
+summarize(mean_PercentFoodInsecure=mean(PercentFoodInsecure,na.rm=T), sd_PercentFoodInsecure=sd(PercentFoodInsecure, na.rm=T))
+
+summarize(texasfulljoin)
+
+texasfulljoin %>% mutate_if(is.character, as.factor)
+
+texasfulljoin <- texasfulljoin %>% mutate(`lowbirth_pctile` = ntile(PercentLowBirthWeight,100))
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Wrangling Part 2
+
+The mean, standard deviation, variance, quantile, minimum, maximum, and n_dstinct were calculated for all numeric variables. Each numeric variable was grouped by the categorical variable OverOrUnderOneMillion, which states wether or not the texas county has a population of over one million people living in the given county. 
+
+I will report the most interesting/significant results. Counties with populations over one million has a higher percentage of high school completion, with over one million counties having a mean of 85 percent completion and under one million counties having a mean of 80 percent high school completion. Besides the PercentLowBirthWeight variable, there was a higher standard deviation for all variables in the under one million category versus the over one million category. 
+```{R}
+mean(texasfulljoin$PercentCompletedHighSchool)
+mean(texasfulljoin$PercentLowBirthWeight)
+mean(texasfulljoin$PercentSmokers)
+mean(texasfulljoin$PercentObesity)
+mean(texasfulljoin$PercentDiabetes)
+mean(texasfulljoin$PercentFoodInsecure)
+
+sd(texasfulljoin$PercentCompletedHighSchool)
+sd(texasfulljoin$PercentLowBirthWeight)
+sd(texasfulljoin$PercentSmokers)
+sd(texasfulljoin$PercentObesity)
+sd(texasfulljoin$PercentDiabetes)
+sd(texasfulljoin$PercentFoodInsecure)
+
+var(texasfulljoin$PercentCompletedHighSchool)
+var(texasfulljoin$PercentLowBirthWeight)
+var(texasfulljoin$PercentSmokers)
+var(texasfulljoin$PercentObesity)
+var(texasfulljoin$PercentDiabetes)
+var(texasfulljoin$PercentFoodInsecure)
+
+quantile(texasfulljoin$PercentCompletedHighSchool)
+quantile(texasfulljoin$PercentSmokers)
+quantile(texasfulljoin$PercentObesity)
+quantile(texasfulljoin$PercentDiabetes)
+quantile(texasfulljoin$PercentFoodInsecure)
+
+min(texasfulljoin$PercentCompletedHighSchool)
+min(texasfulljoin$PercentLowBirthWeight)
+min(texasfulljoin$PercentSmokers)
+min(texasfulljoin$PercentObesity)
+min(texasfulljoin$PercentDiabetes)
+min(texasfulljoin$PercentFoodInsecure)
+
+max(texasfulljoin$PercentCompletedHighSchool)
+max(texasfulljoin$PercentLowBirthWeight)
+max(texasfulljoin$PercentSmokers)
+max(texasfulljoin$PercentObesity)
+max(texasfulljoin$PercentDiabetes)
+max(texasfulljoin$PercentFoodInsecure)
+
+n_distinct(texasfulljoin$PercentCompletedHighSchool)
+n_distinct(texasfulljoin$PercentLowBirthWeight)
+n_distinct(texasfulljoin$PercentSmokers)
+n_distinct(texasfulljoin$PercentObesity)
+n_distinct(texasfulljoin$PercentDiabetes)
+n_distinct(texasfulljoin$PercentFoodInsecure)
+
+texasfulljoin %>% group_by(OverOrUnderOneMillionPopulation) %>% summarize(mean_PercentObesity=mean(PercentObesity,na.rm=T), sd_PercentObesity=sd(PercentObesity, na.rm=T))
+
+texasfulljoin %>% group_by(OverOrUnderOneMillionPopulation) %>% summarize(mean_PercentSmokers=mean(PercentSmokers,na.rm=T), sd_PercentSmokers=sd(PercentSmokers, na.rm=T))
+
+texasfulljoin %>% group_by(OverOrUnderOneMillionPopulation) %>% summarize(mean_PercentDiabetes=mean(PercentDiabetes,na.rm=T), sd_PercentDiabetes=sd(PercentDiabetes, na.rm=T))
+
+texasfulljoin %>% group_by(OverOrUnderOneMillionPopulation) %>% 
+summarize(mean_PercentFoodInsecure=mean(PercentFoodInsecure,na.rm=T), sd_PercentFoodInsecure=sd(PercentFoodInsecure, na.rm=T))
+
+texasfulljoin %>% group_by(OverOrUnderOneMillionPopulation) %>% 
+summarize(mean_PercentLowBirthWeight=mean(PercentLowBirthWeight,na.rm=T), sd_PercentLowBirthWeight=sd(PercentLowBirthWeight, na.rm=T))
+
+texasfulljoin %>% group_by(OverOrUnderOneMillionPopulation) %>% 
+summarize(mean_PercentCompletedHighSchool=mean(PercentCompletedHighSchool,na.rm=T), sd_PercentCompletedHighSchool=sd(PercentCompletedHighSchool, na.rm=T))
+
+texasfulljoin %>% summarize_if(is.numeric, list(min=min,max=max), na.rm=T)
+```
+
+## Visualizing, Dimensionality Reduction, and Pivot/Retidy 
+
+Graph 1 shows percent obesity and percent smokers per Texas county. Graph 2 shows a heatmap of numeric variables, in which the highest correlation seems to be between percent smokers and percent food insecure (0.65), suggesting that the two are possibly associated. Graph 3 shows the occurance of obesity and diabetes per Texas county, the county with the highest diabetes percentage (about 11.9), has an obesity percentage of about 33 percent. 
+
+
+```{R}
+ 
+library(tidyverse)
+
+texasfulljoin2 <- as.data.frame(apply(texasfulljoin, 2, as.numeric))
+
+txmat <- texasfulljoin2 %>% select_if(is.numeric, na.rm=T) %>% cor(use="pair")
+
+
+ggplot(texasfulljoin, aes(x = County))+
+geom_bar(aes(y=PercentSmokers, color= PercentObesity), stat="summary", fun=mean) + scale_y_continuous(lim=c(0,25)) + xlab("Texas County") + ylab("Percent Smokers") + ggtitle("Percent of Smokers and Obesity per Texas County") 
+
+
+
+tidytexas <- txmat %>% as.data.frame %>% rownames_to_column("var1") %>%
+pivot_longer(-1,names_to="var2",values_to="correlation") 
+
+
+tidytexas%>%ggplot(aes(var1,var2,fill=correlation))+
+geom_tile()+ ggtitle("Heat Map of Numeric Variables") +
+scale_fill_gradient2(low="red",mid="white",high="blue")+ #makes colors!
+geom_text(aes(label=round(correlation,2)),color = "black", size = 4)+ #overlay values
+theme(axis.text.x = element_text(angle = 90, hjust=1))+ #flips x-axis labels
+coord_fixed() 
+
+
+ggplot(texasfulljoin, aes(x=PercentObesity, fill=PercentDiabetes)) + geom_histogram(bins=60) + ggtitle("Percent Obesity and Diabetes Occurance per Texas County") + xlab("Obesity") + ylab("Diabetes") 
+
+
+#PAM CLUSTERING 
+
+library(cluster)
+
+texasfulljoin2%>%ungroup()%>%mutate(gmeanFI=mean(PercentFoodInsecure),gmeanHS=mean(PercentCompletedHighSchool))%>%
+group_by(gmeanFI,gmeanHS,PercentSmokers)%>%
+summarize(meanFI=mean(PercentFoodInsecure), meanHS=mean(PercentCompletedHighSchool),
+WSS=sum((PercentFoodInsecure-meanFI)^2+(PercentCompletedHighSchool-meanHS)^2),
+BSS=sum((meanFI-gmeanFI)^2+(meanHS-gmeanHS)^2))%>%ungroup()%>%
+summarize(BSS=sum(BSS),WSS=sum(WSS))
+
+ 
+kmeans1 <- kmeans(texasfulljoin2[!is.na(texasfulljoin2)], 3)
+kmeans1
+kmeans1$size
+kmeans1$centers
+kmeans1$cluster
+kmeans1$betweenss
+kmeans1$tot.withinss
+
+
+library(cluster)
+sil_width<-vector() #empty vector to hold mean sil width
+for(i in 2:10){
+kms <- kmeans(texasfulljoin2[!is.na(texasfulljoin2)],centers=i) #compute k-means solution
+sil <- silhouette(kms$cluster,dist(texasfulljoin2[!is.na(texasfulljoin2)])) #get sil widths
+sil_width[i]<-mean(sil[,3]) #take averages (higher is better)
+}
+
+
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name="k",breaks=1:10)
+
+
+library(cluster)
+
+pam1 <- texasfulljoin2 %>% pam(k=3)
+pam1
+pamclust<-texasfulljoin2 %>% mutate(cluster=as.factor(pam1$clustering))
+pamclust %>% ggplot(aes(PercentFoodInsecure,PercentCompletedHighSchool,color=cluster)) + geom_point() + ggtitle("Clusters for Percent Completed High School and Percent Food Insecure")
+
+
+pamclust %>% group_by(cluster) %>% summarize_if(is.numeric,mean,na.rm=T)
+
+
+# Pivot and Retidy
+
+texasfulljoin <- texasfulljoin %>% pivot_longer(cols=c("PercentObesity","PercentFoodInsecure"), names_to="PO", values_to="FI")
+
+texasfulljoin <- texasfulljoin%>%
+  pivot_wider(names_from="PO",values_from="FI")
+
+
+
+```
+
+
+
+
+```{R}
+
+
+
+
